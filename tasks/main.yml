@@ -1,0 +1,36 @@
+---
+# tasks file for egeneralov.nginx
+
+- name: Check nginx installation
+  stat:
+    path: /usr/sbin/nginx
+  register: nginx_binary
+
+- block:
+  - apt_key:
+      url: https://nginx.ru/keys/nginx_signing.key
+  - apt_repository:
+      repo: "deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx"
+  - apt:
+      update_cache: yes
+      name: nginx
+      state: present
+  - systemd:
+      name: nginx
+      state: started
+      enabled: yes
+  when: nginx_binary.stat.islnk is not defined
+
+- name: Iptables managment
+  block:
+  - name: "iptables: nginx"
+    iptables:
+      chain: INPUT
+      protocol: tcp
+      destination_port: "{{ item }}"
+      ctstate: NEW,ESTABLISHED
+      jump: ACCEPT
+      comment: nginx
+    with_items:
+      - 80
+      - 443
