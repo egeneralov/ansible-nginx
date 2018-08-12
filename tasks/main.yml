@@ -8,7 +8,7 @@
 
 - block:
   - apt_key:
-      url: https://nginx.ru/keys/nginx_signing.key
+      url: https://nginx.org/keys/nginx_signing.key
   - apt_repository:
       repo: "deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx"
   - apt:
