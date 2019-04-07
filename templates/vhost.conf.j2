@@ -1,0 +1,91 @@
+{{ ansible_managed | comment }}
+# Created from: {{ item | to_json }}
+# Created at {{ ansible_date_time.iso8601 }}
+#
+
+{% for location in item.locations %}
+{% if location.type == "proxy" %}
+upstream upstream_proxy_{{ (item.domain + location.path) | hash('sha1') }} {
+{% for server in location.proxy_to %}
+  server {{ server }};
+{% endfor %}
+}
+{% endif %}
+{% if location.type == "fastcgi" %}
+upstream upstream_fastcgi_{{ (item.domain + location.path) | hash('sha1') }} {
+{% for server in location.fastcgi_pass %}
+  server {{ server }};
+{% endfor %}
+}
+{% endif %}
+{% endfor %}
+
+{% if item.ssl and item.rewrite_ssl %}
+server {
+	server_name {{ item.domain }};
+	listen 80;
+	rewrite ^ https://$http_host$request_uri? permanent;
+}
+{% endif %}
+{% if item.rewrite_ssl %}
+server {
+	server_name www.{{ item.domain }};
+	listen 80;
+	return 301 http://$http_host$request_uri;
+}
+{% endif %}
+
+
+
+server {
+  server_name {{ item.domain }};
+  listen {% if item.ssl | default(False) %}443 ssl{% else %}80{% endif %};
+
+  {% if item.index is defined %}index {{ item.index }};{% endif %}
+
+  root {{ item.root | default('/var/www/' + item.domain ) }};
+
+  {% if item.ssl %}
+  ssl_certificate {{ item.ssl_certificate | default('/etc/nginx/ssl/' + item.domain + '.crt') }};
+  ssl_certificate_key {{ item.ssl_certificate_key | default('/etc/nginx/ssl/' + item.domain + '.key') }};
+  {% endif %}
+
+{% for location in item.locations %}
+  location {{ location.path }} {
+{% if location.root is defined %}
+    root {{ location.root }};
+{% endif %}
+{% if location.index is defined %}
+    index {{ location.index }};
+{% endif %}
+
+{% if location.rewrite is defined %}
+    rewrite {{ location.rewrite }};
+{% endif %}
+
+{% if location.try_files is defined %}
+    try_files {{ location.try_files }};
+{% endif %}
+
+{% if location.type == "proxy" %}
+    proxy_pass {{ location.schema }}upstream_proxy_{{ (item.domain + location.path) | hash('sha1') }};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+{% endif %}
+{% if location.type == "fastcgi" %}
+    fastcgi_pass upstream_fastcgi_{{ (item.domain + location.path) | hash('sha1') }};
+{% if location.fastcgi_param is defined %}
+    fastcgi_param {{ location.fastcgi_param }};
+{% endif %}
+{% if location.fastcgi_index is defined %}
+    fastcgi_index {{ location.fastcgi_index }}
+{% else %}
+    fastcgi_index index.php;
+{% endif %}
+    include fastcgi_params;
+{% endif %}
+  }
+
+{% endfor %}
+  
+}
