@@ -1,6 +1,5 @@
 {{ ansible_managed | comment }}
 # Created from: {{ item | to_json }}
-# Created at {{ ansible_date_time.iso8601 }}
 #
 
 {% for location in item.locations %}
@@ -44,6 +43,7 @@ server {
   {% if item.index is defined %}index {{ item.index }};{% endif %}
 
   root {{ item.root | default('/var/www/' + item.domain ) }};
+  client_max_body_size {{ item.client_max_body_size | default('5m') }};
 
   {% if item.ssl %}
   ssl_certificate {{ item.ssl_certificate | default('/etc/nginx/ssl/' + item.domain + '.crt') }};
