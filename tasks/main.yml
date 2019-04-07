@@ -49,16 +49,15 @@
   when: nginx_nginx_conf is changed or nginx_vhosts_conf is changed
 
 
-# - name: Iptables managment
-#   block:
-#   - name: "iptables: nginx"
-#     iptables:
-#       chain: INPUT
-#       protocol: tcp
-#       destination_port: "{{ item }}"
-#       ctstate: NEW,ESTABLISHED
-#       jump: ACCEPT
-#       comment: nginx
-#     with_items:
-#       - 80
-#       - 443
+- name: "iptables: nginx"
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ item }}"
+    ctstate: NEW,ESTABLISHED
+    jump: ACCEPT
+    comment: nginx
+  with_items:
+    - 80
+    - 443
+  when: manage_iptables

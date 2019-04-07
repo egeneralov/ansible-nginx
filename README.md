@@ -14,6 +14,7 @@ Example Playbook
 
     - hosts: servers
       vars:
+        manage_iptables: false
         vhosts:
           - domain: "example.com"
             ssl: false
