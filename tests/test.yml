@@ -1,5 +1,5 @@
 ---
-- hosts: localhost
+- hosts: nginx
   remote_user: root
   roles:
     - egeneralov.nginx

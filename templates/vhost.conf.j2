@@ -24,6 +24,10 @@ server {
 	server_name {{ item.domain }};
 	listen 80;
 	rewrite ^ https://$http_host$request_uri? permanent;
+	
+	access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
+	error_log /var/log/nginx/{{ item.domain }}_error.log;
+	
 }
 {% endif %}
 {% if item.rewrite_ssl %}
@@ -31,6 +35,9 @@ server {
 	server_name www.{{ item.domain }};
 	listen 80;
 	return 301 http://$http_host$request_uri;
+
+	access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
+	error_log /var/log/nginx/{{ item.domain }}_error.log;
 }
 {% endif %}
 
@@ -40,11 +47,26 @@ server {
   server_name {{ item.domain }};
   listen {% if item.ssl | default(False) %}443 ssl{% else %}80{% endif %};
 
+	access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
+	error_log /var/log/nginx/{{ item.domain }}_error.log;
+
+  {% if item.ignore_invalid_headers is defined %}
+  {% if item.ignore_invalid_headers == true %}
+  ignore_invalid_headers off;
+  {% endif %}
+  {% endif %}
+
+  {% if item.proxy_buffering is defined %}
+  {% if item.proxy_buffering == false %}
+  proxy_buffering off;
+  {% endif %}
+  {% endif %}
+
+
   {% if item.index is defined %}index {{ item.index }};{% endif %}
 
   root {{ item.root | default('/var/www/' + item.domain ) }};
   client_max_body_size {{ item.client_max_body_size | default('5m') }};
-
   {% if item.ssl %}
   ssl_certificate {{ item.ssl_certificate | default('/etc/nginx/ssl/' + item.domain + '.crt') }};
   ssl_certificate_key {{ item.ssl_certificate_key | default('/etc/nginx/ssl/' + item.domain + '.key') }};
@@ -59,6 +81,7 @@ server {
     index {{ location.index }};
 {% endif %}
 
+
 {% if location.rewrite is defined %}
     rewrite {{ location.rewrite }};
 {% endif %}
@@ -69,8 +92,11 @@ server {
 
 {% if location.type == "proxy" %}
     proxy_pass {{ location.schema }}upstream_proxy_{{ (item.domain + location.path) | hash('sha1') }};
-    proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
+{% if location.proxy_set_header is defined %}
+    proxy_set_header Host {{ location.proxy_set_header }};
+{% endif %}
+
 {% endif %}
 {% if location.type == "fastcgi" %}
     fastcgi_pass upstream_fastcgi_{{ (item.domain + location.path) | hash('sha1') }};
