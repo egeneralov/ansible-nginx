@@ -21,23 +21,22 @@ upstream upstream_fastcgi_{{ (item.domain + location.path) | hash('sha1') }} {
 
 {% if item.ssl and item.rewrite_ssl %}
 server {
-	server_name {{ item.domain }};
-	listen 80;
-	rewrite ^ https://$http_host$request_uri? permanent;
-	
-	access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
-	error_log /var/log/nginx/{{ item.domain }}_error.log;
-	
+  server_name {{ item.domain }};
+  listen 80;
+  rewrite ^ https://$http_host$request_uri? permanent;
+  
+  access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
+  error_log /var/log/nginx/{{ item.domain }}_error.log;
 }
 {% endif %}
-{% if item.rewrite_ssl %}
+{% if item.rewrite_www %}
 server {
-	server_name www.{{ item.domain }};
-	listen 80;
-	return 301 http://$http_host$request_uri;
+  server_name www.{{ item.domain }};
+  listen 80;
+  return 301 http://$http_host$request_uri;
 
-	access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
-	error_log /var/log/nginx/{{ item.domain }}_error.log;
+  access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
+  error_log /var/log/nginx/{{ item.domain }}_error.log;
 }
 {% endif %}
 
@@ -47,8 +46,9 @@ server {
   server_name {{ item.domain }};
   listen {% if item.ssl | default(False) %}443 ssl{% else %}80{% endif %};
 
-	access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
-	error_log /var/log/nginx/{{ item.domain }}_error.log;
+
+  access_log /var/log/nginx/{{ item.domain }}_access.log extend_json buffer=16k flush=10s;
+  error_log /var/log/nginx/{{ item.domain }}_error.log;
 
   {% if item.ignore_invalid_headers is defined %}
   {% if item.ignore_invalid_headers == true %}
@@ -63,24 +63,33 @@ server {
   {% endif %}
 
 
+  {% if item.raw is defined %}
+    {{ item.raw }}
+  {% endif %}
+
+
   {% if item.index is defined %}index {{ item.index }};{% endif %}
 
   root {{ item.root | default('/var/www/' + item.domain ) }};
   client_max_body_size {{ item.client_max_body_size | default('5m') }};
-  {% if item.ssl %}
+{% if item.ssl %}
   ssl_certificate {{ item.ssl_certificate | default('/etc/nginx/ssl/' + item.domain + '.crt') }};
   ssl_certificate_key {{ item.ssl_certificate_key | default('/etc/nginx/ssl/' + item.domain + '.key') }};
-  {% endif %}
+{% endif %}
 
 {% for location in item.locations %}
   location {{ location.path }} {
+
+{% if location.raw is defined %}{{ location.raw }}{% endif %}
+
+
 {% if location.root is defined %}
     root {{ location.root }};
 {% endif %}
+
 {% if location.index is defined %}
     index {{ location.index }};
 {% endif %}
-
 
 {% if location.rewrite is defined %}
     rewrite {{ location.rewrite }};
@@ -92,7 +101,19 @@ server {
 
 {% if location.type == "proxy" %}
     proxy_pass {{ location.schema }}upstream_proxy_{{ (item.domain + location.path) | hash('sha1') }};
+
+    proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Referer $http_referer;
+
+    proxy_connect_timeout {{ proxy_connect_timeout | default('60s') }};
+    proxy_send_timeout {{ proxy_send_timeout | default('60s') }};
+    proxy_read_timeout {{ proxy_read_timeout | default('60s') }};
+    send_timeout {{ send_timeout | default('60s') }};
+    proxy_redirect {{ proxy_redirect | default('off') }};
+
 {% if location.proxy_set_header is defined %}
     proxy_set_header Host {{ location.proxy_set_header }};
 {% endif %}

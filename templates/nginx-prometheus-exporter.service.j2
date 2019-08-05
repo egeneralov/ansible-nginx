@@ -1,0 +1,25 @@
+[Unit]
+Description=NGINX Prometheus exporter makes it possible to monitor NGINX or NGINX Plus using Prometheus.
+After=nginx.service
+Wants=nginx.service
+Documentation=https://github.com/nginxinc/nginx-prometheus-exporter
+AssertFileIsExecutable=/usr/local/bin/nginx-prometheus-exporter
+
+[Service]
+ExecStart=/usr/local/bin/nginx-prometheus-exporter
+EnvironmentFile=/etc/default/nginx-prometheus-exporter
+User=nobody
+Group=nobody
+Restart=on-failure
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

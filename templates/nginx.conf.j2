@@ -1,11 +1,10 @@
 user nginx;
 pid /run/nginx.pid;
-worker_rlimit_nofile 65535;
-worker_processes auto;
-error_log /var/log/nginx/error.log crit;
+worker_rlimit_nofile {{ worker_rlimit_nofile }};
+worker_processes {{ worker_processes }};
 
 events {
-  worker_connections 4000;
+  worker_connections {{ worker_connections }};
   use epoll;
   multi_accept on;
 }
@@ -25,10 +24,15 @@ http {
 
 
   server_tokens off;
-  server_names_hash_bucket_size 64;
-  client_max_body_size 128m;
+  server_names_hash_bucket_size {{ server_names_hash_bucket_size }};
+  client_max_body_size {{ client_max_body_size }};
 
 
+{% if resolver is defined%}
+{% if resolver.servers != [] %}
+  resolver {% for server in resolver.servers %}{{ server }} {% endfor %}valid={{ resolver.valid|default('30s') }};
+{% endif %}
+{% endif %}
 
 
   open_file_cache max=200000 inactive=20s;
@@ -124,6 +128,19 @@ http {
   error_log /var/log/nginx/error.log;
 
   include /etc/nginx/conf.d/*.conf;
+
+{% if exporter.enabled is defined %}{% if exporter.enabled|default(false) %}
+  server {
+    listen 80;
+    server_name 127.0.0.1;
+    location = /stub_status {
+      stub_status;
+      access_log off;
+      allow 127.0.0.1/32;
+      deny all;
+    }
+  }
+{% endif %}{% endif %}
 
 }
 

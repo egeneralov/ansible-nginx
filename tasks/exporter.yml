@@ -1,0 +1,30 @@
+---
+
+- name: "install : exporter"
+  unarchive:
+    src: "{{ __nginx_exporter_url__ }}"
+    dest: "/usr/local/bin"
+    remote_src: yes
+    mode: u+x
+  register: _e_bin
+
+- name: "configure : exporter"
+  template:
+    src: nginx-exporter-env.j2
+    dest: /etc/default/nginx-prometheus-exporter
+  register: _e_env
+
+- name: "configure : systemd"
+  template:
+    src: nginx-prometheus-exporter.service.j2
+    dest: /etc/systemd/system/nginx-prometheus-exporter.service
+  register: _e_unit
+
+- name: "systemd: (re)start exporter"
+  systemd:
+    name: nginx-prometheus-exporter.service
+    enabled: yes
+    state: "{% if _e_bin is changed or _e_env is changed or _e_unit is changed %}re{% endif %}started"
+
+
+# -nginx.scrape-uri http://<nginx>:8080/stub_status

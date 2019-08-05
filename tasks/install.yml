@@ -1,0 +1,54 @@
+---
+# tasks file for egeneralov.nginx
+
+- name: Install https transport and privacy guard tools
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    name:
+      - apt-transport-https
+      - gnupg2
+
+- name: Import repo key
+  apt_key:
+    url: https://nginx.org/keys/nginx_signing.key
+  register: nginx_repo_key
+
+- name: Add official repository
+  apt_repository:
+    repo: "deb http://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx"
+    filename: nginx
+  register: nginx_repo
+
+- name: install nginx
+  apt:
+    name:
+      - nginx
+#       - "{% if manage_iptables %}iptables{% else %}{{ omit }}{% endif %}"
+    update_cache: "{% if nginx_repo is changed or nginx_repo_key is changed %}yes{% else %}no{% endif %}"
+    state: "{{ pkg_state }}"
+
+- name: "remove : default.conf"
+  file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+  register: nginx_default_conf
+
+- name: "systemd : nginx"
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: "iptables : nginx input 80 443"
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ item }}"
+    ctstate: NEW,ESTABLISHED
+    jump: ACCEPT
+    comment: nginx
+  with_items:
+    - 80
+    - 443
+  when: manage_iptables

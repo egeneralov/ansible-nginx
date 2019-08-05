@@ -1,7 +1,24 @@
 ---
 # defaults file for egeneralov.nginx
 
-vhosts: []
+worker_connections: 4000
+resolver:
+  servers:
+    - 1.0.0.1
+    - 8.8.4.4
+  valid: 180s
+server_names_hash_bucket_size: 128
+client_max_body_size: 128m
+
+# [present, latest]
+pkg_state: latest
+
+
+worker_rlimit_nofile: 65535
+worker_processes: auto
+
+
+vhosts:
 #   - domain: "example.com"
 #     ssl: false
 #     rewrite_ssl: true
@@ -33,7 +50,29 @@ vhosts: []
 #           - 127.0.0.1:8080
 #           - 127.0.0.1:8081
 #           - 127.0.0.1:8082
+#         proxy_connect_timeout: 60s
+#         proxy_send_timeout: 60s
+#         proxy_read_timeout: 60s
+#         send_timeout: 60s
+#         proxy_redirect: off
 
+
+exporter:
+  enabled: false
+  version: 0.4.2
+  env:
+    NGINX_PLUS: false
+    NGINX_RETRY_INTERVAL: "5s"
+    SCRAPE_URI: "http://127.0.0.1/stub_status"
+    SSL_VERIFY: false
+    TIMEOUT: "5s"
+    LISTEN_ADDRESS: ":9113"
+    TELEMETRY_PATH: "/metrics"
+    # NGINX_RETRIES=""
+
+
+
+__nginx_exporter_url__: "https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v{{ exporter.version }}/nginx-prometheus-exporter-{{ exporter.version }}-linux-amd64.tar.gz"
 
 manage_iptables: false
 
