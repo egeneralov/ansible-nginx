@@ -7,19 +7,16 @@ AssertFileIsExecutable=/usr/local/bin/nginx-prometheus-exporter
 
 [Service]
 ExecStart=/usr/local/bin/nginx-prometheus-exporter -nginx.scrape-uri http://127.0.0.1/stub_status -web.listen-address {{ exporter.bind }}
-# EnvironmentFile=/etc/default/nginx-prometheus-exporter
-# User=nobody
-# Group=nobody
-# Restart=on-failure
-# MemoryDenyWriteExecute=yes
-# NoNewPrivileges=yes
-# PrivateDevices=yes
-# PrivateTmp=yes
-# ProtectControlGroups=yes
-# ProtectHome=yes
-# ProtectKernelModules=yes
-# ProtectKernelTunables=yes
-# ProtectSystem=strict
+Restart=on-failure
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
 
 [Install]
 WantedBy=multi-user.target
