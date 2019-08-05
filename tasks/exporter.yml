@@ -8,11 +8,11 @@
     mode: u+x
   register: _e_bin
 
-- name: "configure : exporter"
-  template:
-    src: nginx-exporter-env.j2
-    dest: /etc/default/nginx-prometheus-exporter
-  register: _e_env
+# - name: "configure : exporter"
+#   template:
+#     src: nginx-exporter-env.j2
+#     dest: /etc/default/nginx-prometheus-exporter
+#   register: _e_env
 
 - name: "configure : systemd"
   template:
@@ -24,7 +24,5 @@
   systemd:
     name: nginx-prometheus-exporter.service
     enabled: yes
-    state: "{% if _e_bin is changed or _e_env is changed or _e_unit is changed %}re{% endif %}started"
-
-
-# -nginx.scrape-uri http://<nginx>:8080/stub_status
+    state: "{% if _e_bin is changed or _e_unit is changed %}re{% endif %}started"
+#     state: "{% if _e_bin is changed or _e_env is changed or _e_unit is changed %}re{% endif %}started"

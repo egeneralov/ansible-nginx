@@ -60,15 +60,16 @@ vhosts:
 exporter:
   enabled: false
   version: 0.4.2
-  env:
-    NGINX_PLUS: false
-    NGINX_RETRY_INTERVAL: "5s"
-    SCRAPE_URI: "http://127.0.0.1/stub_status"
-    SSL_VERIFY: false
-    TIMEOUT: "5s"
-    LISTEN_ADDRESS: ":9113"
-    TELEMETRY_PATH: "/metrics"
-    # NGINX_RETRIES=""
+  bind: 0.0.0.0:9113
+#   env:
+#     NGINX_PLUS: false
+#     NGINX_RETRY_INTERVAL: "5s"
+#     SCRAPE_URI: "http://127.0.0.1/stub_status"
+#     SSL_VERIFY: false
+#     TIMEOUT: "5s"
+#     LISTEN_ADDRESS: ":9113"
+#     TELEMETRY_PATH: "/metrics"
+#     # NGINX_RETRIES=""
 
 
 
