@@ -4,7 +4,6 @@
 - import_tasks: install.yml
 
 - include_tasks: exporter.yml
-  when: exporter.enabled
 
 
 - name: "configure : nginx.conf"

@@ -23,6 +23,7 @@
 - name: "systemd: (re)start exporter"
   systemd:
     name: nginx-prometheus-exporter.service
-    enabled: yes
-    state: "{% if _e_bin is changed or _e_unit is changed %}re{% endif %}started"
+    enabled: "{{ exporter.enabled }}"
+    state: "{% if exporter.enabled %}{% if _e_bin is changed or _e_unit is changed %}re{% endif %}started{% else %}stopped{% endif %}"
 #     state: "{% if _e_bin is changed or _e_env is changed or _e_unit is changed %}re{% endif %}started"
+

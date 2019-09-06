@@ -1,7 +1,7 @@
 ---
 # tasks file for egeneralov.nginx
 
-- name: Install https transport and privacy guard tools
+- name: "install : https transport and privacy guard tools"
   apt:
     update_cache: yes
     cache_valid_time: 3600
@@ -9,12 +9,12 @@
       - apt-transport-https
       - gnupg2
 
-- name: Import repo key
+- name: "Import : repo.key"
   apt_key:
     url: https://nginx.org/keys/nginx_signing.key
   register: nginx_repo_key
 
-- name: Add official repository
+- name: "configure : repository"
   apt_repository:
     repo: "deb http://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx"
     filename: nginx
