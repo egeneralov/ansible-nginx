@@ -8,6 +8,7 @@
     name:
       - apt-transport-https
       - gnupg2
+      - ca-certificates
 
 - name: "Import : repo.key"
   apt_key:
