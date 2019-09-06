@@ -18,6 +18,19 @@ worker_rlimit_nofile: 65535
 worker_processes: auto
 
 
+upsteams: []
+#   name:
+#     proxy_connect_timeout: 60s
+#     ip_hash: False
+#     proxy_send_timeout: 60s
+#     proxy_read_timeout: 60s
+#     send_timeout: 60s
+#     proxy_redirect: off
+#     proxy_to:
+#       - 1.1.1.1:80
+#       - 1.0.0.1:80
+
+
 vhosts: []
 #   - domain: "example.com"
 #     ssl: false

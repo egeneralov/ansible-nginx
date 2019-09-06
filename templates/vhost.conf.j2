@@ -104,7 +104,11 @@ server {
 {% if location.type == "proxy" %}
     proxy_pass {{ location.schema }}upstream_proxy_{{ (item.domain + location.path) | hash('sha1') }};
 
+{% if location.proxy_set_header is defined %}
+    proxy_set_header Host {{ location.proxy_set_header }};
+{% else %}
     proxy_set_header Host $host;
+{% endif %}
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
@@ -115,12 +119,29 @@ server {
     proxy_read_timeout {{ proxy_read_timeout | default('60s') }};
     send_timeout {{ send_timeout | default('60s') }};
     proxy_redirect {{ proxy_redirect | default('off') }};
+{% endif %}
+
+
+{% if location.type == "upstream" %}
+    proxy_pass {{ location.schema }}{{ location.upstream }};
 
 {% if location.proxy_set_header is defined %}
     proxy_set_header Host {{ location.proxy_set_header }};
+{% else %}
+    proxy_set_header Host $host;
+{% endif %}
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Referer $http_referer;
+
+    proxy_connect_timeout {{ proxy_connect_timeout | default('60s') }};
+    proxy_send_timeout {{ proxy_send_timeout | default('60s') }};
+    proxy_read_timeout {{ proxy_read_timeout | default('60s') }};
+    send_timeout {{ send_timeout | default('60s') }};
+    proxy_redirect {{ proxy_redirect | default('off') }};
 {% endif %}
 
-{% endif %}
 {% if location.type == "fastcgi" %}
     fastcgi_pass upstream_fastcgi_{{ (item.domain + location.path) | hash('sha1') }};
 {% if location.fastcgi_param is defined %}

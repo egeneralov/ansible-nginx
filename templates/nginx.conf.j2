@@ -127,6 +127,19 @@ http {
   access_log /var/log/nginx/access.log extend_json buffer=16k flush=10s;
   error_log /var/log/nginx/error.log;
 
+{% for key, value in upsteams.items() %}
+# {{ key }}: {{ value }}
+upstream {{ key }} {
+{% if upsteams[key].ip_hash|default(False) %}  ip_hash;
+{% endif %}
+{% for server in upsteams[key].proxy_to %}
+  server {{ server }};
+{% endfor %}
+}
+{% endfor %}
+
+
+
   include /etc/nginx/conf.d/*.conf;
 
 {% if exporter.enabled is defined %}{% if exporter.enabled|default(false) %}
