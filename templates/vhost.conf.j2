@@ -12,6 +12,8 @@ upstream upstream_proxy_{{ (item.domain + location.path) | hash('sha1') }} {
 {% endif %}
 {% if location.type == "fastcgi" %}
 upstream upstream_fastcgi_{{ (item.domain + location.path) | hash('sha1') }} {
+  {% if location.ip_hash|default(false) %}ip_hash;{% endif %}
+
 {% for server in location.fastcgi_pass %}
   server {{ server }};
 {% endfor %}
