@@ -6,6 +6,15 @@
 - include_tasks: exporter.yml
 
 
+- name: "configure : upstreams"
+  template:
+    src: "upstream.conf.j2"
+    dest: "/etc/nginx/conf.d/upstream-{{ item.key }}.conf"
+    backup: yes
+  register: nginx_nginx_conf
+  with_dict: "{{ upstreams }}"
+
+
 - name: "configure : nginx.conf"
   template:
     src: "nginx.conf.j2"

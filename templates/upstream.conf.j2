@@ -1,0 +1,8 @@
+# {{ item.key }}: {{ item.value }}
+upstream {{ item.key }} {
+{% if item.value.ip_hash|default(False) %}  ip_hash;
+{% endif %}
+{% for server in item.value.proxy_to %}
+  server {{ server }};
+{% endfor %}
+}
