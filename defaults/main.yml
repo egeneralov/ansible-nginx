@@ -1,6 +1,8 @@
 ---
 # defaults file for egeneralov.nginx
 
+nginx_user: nginx
+
 worker_connections: 4000
 resolver:
   servers:
@@ -16,7 +18,6 @@ pkg_state: latest
 
 worker_rlimit_nofile: 65535
 worker_processes: auto
-
 
 upstreams: []
 #   name:

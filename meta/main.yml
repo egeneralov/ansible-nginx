@@ -7,9 +7,24 @@ galaxy_info:
   platforms:
   - name: Debian
     versions:
-    - all
+    - sid
+    - bullseye
+    - buster
+    - stretch
+    - jessie
+  - name: Ubuntu
+    versions:
+    - bionic
+    - cosmic
+    - disco
+    - lucid
+    - precise
+    - saucy
+  - name: EL
+    versions:
+      - 7
+      - 8
   galaxy_tags:
     - nginx
 
 dependencies: []
-#   - egeneralov.iptables

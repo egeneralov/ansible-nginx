@@ -1,4 +1,4 @@
-user nginx;
+user {{ nginx_user }};
 pid /run/nginx.pid;
 worker_rlimit_nofile {{ worker_rlimit_nofile }};
 worker_processes {{ worker_processes }};

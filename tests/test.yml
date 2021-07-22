@@ -2,7 +2,19 @@
 
 - hosts: nginx
   vars:
-    upsteams:
+    exporter:
+      enabled: true
+      version: 0.4.2
+      bind: 0.0.0.0:9113
+      env:
+        NGINX_PLUS: false
+        NGINX_RETRY_INTERVAL: "5s"
+        SCRAPE_URI: "http://127.0.0.1/stub_status"
+        SSL_VERIFY: false
+        TIMEOUT: "5s"
+        LISTEN_ADDRESS: ":9113"
+        TELEMETRY_PATH: "/metrics"
+    upstreams:
       cloudflare:
         ip_hash: True
         proxy_to:
