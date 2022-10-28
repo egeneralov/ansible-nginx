@@ -151,7 +151,7 @@ server {
 {% else %}
     fastcgi_index index.php;
 {% endif %}
-    include fastcgi_params;
+    include /etc/nginx/fastcgi_params;
 {% endif %}
   }
 
